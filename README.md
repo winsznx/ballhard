@@ -37,41 +37,36 @@ This was only possible because [ElevenLabs Speech Engine](https://elevenlabs.io/
 ## Architecture
 
 ```mermaid
-%%{init: {'theme':'dark','themeVariables':{'background':'#0a0a14','primaryColor':'#1a1a28','primaryTextColor':'#e5e5ea','primaryBorderColor':'#3a3a4a','lineColor':'#5a5a6a','actorBkg':'#1a1a28','actorBorder':'#3a3a4a','actorTextColor':'#e5e5ea','signalColor':'#5a5a6a','signalTextColor':'#e5e5ea','labelBoxBkgColor':'#1a1a28','labelTextColor':'#e5e5ea','noteBkgColor':'#1a1a28','noteTextColor':'#e5e5ea','noteBorderColor':'#3a3a4a'}}}%%
-sequenceDiagram
-  autonumber
-  participant Browser as Browser (Next.js)
-  participant Web as Web API (Node)
-  participant ElevenLabs as ElevenLabs Cloud
-  participant Sidecar as Sidecar (Railway)
-  participant LLM as Groq Llama 3.3 70B
-  participant Supabase as Supabase
+graph LR
+    Browser["Browser<br/>(Next.js · WebRTC)"]
+    Web["Web API<br/>(Next.js)"]
+    EL["ElevenLabs Cloud<br/>Speech Engine"]
+    Sidecar["Sidecar<br/>(Railway · per-path attach)"]
+    LLM["Groq<br/>Llama 3.3 70B"]
+    DB["Supabase<br/>verdict_cards"]
 
-  Browser->>Web: GET /api/session?scenarioId=embezzler
-  Web->>ElevenLabs: conversationalAi.conversations.getWebrtcToken({agentId: seng_})
-  ElevenLabs-->>Web: { token }
-  Web-->>Browser: { token, sengId }
-  Browser->>ElevenLabs: useConversation.startSession({conversationToken, webrtc})
-  ElevenLabs->>Sidecar: WS dial → /ws/embezzler
-  Sidecar-->>ElevenLabs: ack
-  ElevenLabs-->>Browser: TTS principal monologue (firstMessage override)
-  Browser->>ElevenLabs: mic audio (LiveKit WebRTC)
-  Note over Browser,ElevenLabs: VAD rising-edge → T0 client-side
-  ElevenLabs->>Sidecar: onTranscript(history, signal)
-  Sidecar->>LLM: chat.completions.create({signal, messages})
-  LLM-->>Sidecar: streamed tokens
-  Sidecar->>ElevenLabs: session.sendResponse(stream)
-  ElevenLabs-->>Browser: TTS deflection
-  Note over Browser: player interrupts → signal.abort()
-  Browser-->>ElevenLabs: VAD speech
-  ElevenLabs-->>Sidecar: new onTranscript (auto-aborts previous signal)
-  Note over Browser: T1 = audio halts · pulse + sting
-  Browser->>Web: POST /api/verdict (at round end)
-  Web->>Supabase: insert verdict_cards
-  Supabase-->>Web: { id }
-  Web-->>Browser: { id, url }
-  Browser->>Browser: navigator.share() | X intent
+    Browser -->|"GET /api/session"| Web
+    Web -->|"getWebrtcToken({agentId})"| EL
+    Web -->|"{ token, sengId }"| Browser
+    Browser -.->|"mic + audio<br/>conversationToken"| EL
+    EL -.->|"WS dial → /ws/&lt;scenarioId&gt;"| Sidecar
+    Sidecar -->|"chat.completions.create<br/>{signal, messages}"| LLM
+    LLM -.->|"streamed tokens"| Sidecar
+    Sidecar -.->|"session.sendResponse"| EL
+    Browser -->|"POST /api/verdict"| Web
+    Web -->|"insert"| DB
+
+    classDef edge fill:#1a1a28,stroke:#3a3a4a,color:#e5e5ea
+    class Browser,Web,EL,Sidecar,LLM,DB edge
 ```
+
+**The interrupt loop (the cinematic moment):**
+
+1. Player speaks while agent is mid-deflection → VAD rising-edge in browser → `T0 = performance.now()`
+2. ElevenLabs sends a new `onTranscript` to the sidecar → the previous transcript's `AbortSignal` auto-fires
+3. In-flight Groq stream throws `AbortError`, tokens cease → `session.sendResponse` returns
+4. TTS playback in browser halts → `onModeChange("listening")` → `T1 = performance.now()`
+5. `latency = T1 − T0` → flashes red on the latency badge · Margot sting plays · scorecard ticks broken+1
 
 ## Stack
 
