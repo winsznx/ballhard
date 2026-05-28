@@ -31,3 +31,9 @@ export function verdictUrl(id: string): string {
 export function ogImageUrl(id: string): string {
   return `${appUrl().replace(/\/$/, "")}/api/og/${id}`;
 }
+
+// 1080x1080 attachable share card — different endpoint than the landscape
+// link-unfurl OG. Used by Web Share API Level 2 file-sharing.
+export function squareCardUrl(id: string): string {
+  return `${appUrl().replace(/\/$/, "")}/api/og/${id}/square`;
+}

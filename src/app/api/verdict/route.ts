@@ -13,7 +13,10 @@ const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
 
 // Simple per-IP rate limit. Module-local Map is acceptable at hackathon scale.
 // Resets on cold starts; documented limitation. Phase 8 swap to KV if abuse appears.
-const RATE_LIMIT_MAX = 10;
+// Bumped 10→30: ShareButton pre-warms on sheet open (one POST per round) to keep
+// the tap handler synchronous (iOS user-activation), so the POST count tracks
+// rounds played, not deliberate shares. Orphan rows are anonymous + cheap.
+const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 type RateRecord = { count: number; resetAt: number };
 const rate = new Map<string, RateRecord>();
