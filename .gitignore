@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Moat docs — PRD, research, strategy, screenplay
+/internal/
+
+# Claude Code session state
+/.claude/

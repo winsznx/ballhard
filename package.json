@@ -6,21 +6,41 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "day0": "tsx --env-file=.env.local scripts/day0.ts",
+    "dev:engine": "tsx --env-file=.env.local watch engine/server.ts",
+    "start:engine": "tsx engine/server.ts",
+    "provision:engine": "tsx --env-file=.env.local scripts/provision-engine.ts",
+    "gen:stings": "tsx --env-file=.env.local scripts/gen-stings.ts",
+    "test:rls": "tsx --env-file=.env.local scripts/test-rls.ts",
+    "gen:music": "tsx --env-file=.env.local scripts/gen-music.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@elevenlabs/client": "^1.8.1",
+    "@elevenlabs/elevenlabs-js": "^2.49.1",
+    "@elevenlabs/react": "^1.6.3",
+    "@supabase/supabase-js": "^2.106.2",
+    "framer-motion": "^12.40.0",
+    "groq-sdk": "^1.2.0",
+    "lucide-react": "^1.16.0",
+    "nanoid": "^5.1.11",
     "next": "16.2.6",
+    "openai": "^6.39.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "^4.22.3",
     "typescript": "^5"
   }
 }
