@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { ScenarioCard } from "@/components/lobby/ScenarioCard";
 import { Mono } from "@/components/primitives/Mono";
 import { SCENARIOS } from "@scenarios";
@@ -31,10 +33,16 @@ export default function Home() {
         ))}
       </section>
 
-      <footer className="mt-auto pt-8 pb-2">
+      <footer className="mt-auto flex items-center justify-between gap-4 pt-8 pb-2">
         <Mono size="caption" className="text-ink-3">
           built on elevenlabs speech engine · #ElevenHacks
         </Mono>
+        <Link
+          href="/docs"
+          className="font-mono text-caption-1 tracking-[0.18em] text-ink-3 hover:text-ink-1"
+        >
+          HOW IT WORKS →
+        </Link>
       </footer>
     </main>
   );
